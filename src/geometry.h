@@ -30,11 +30,12 @@ public:
 
 class Mesh {
 public:
-	std::vector<HalfEdge> faces;
+	std::vector<HalfEdge *> faces;
 	void mergeFace(HalfEdge * f);
+
+	std::vector<GLuint> getElements();
 	Mesh();
 };
-
 
 
 /// ---------------------------------------------------------------------------------

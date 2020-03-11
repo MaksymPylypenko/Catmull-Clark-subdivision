@@ -30,6 +30,7 @@ Mesh mesh;
 
 void setupGeometry() {
 	loadQuadObj("obj/cube.obj", positions, elements, mesh);
+	elements = mesh.getElements();
 }
 
 
