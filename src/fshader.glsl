@@ -1,9 +1,12 @@
 #version 150
 
-flat in vec4 f_colour;
+in vec4 f_colour;
 out vec4 out_colour;
 
 void main() 
+<<<<<<< HEAD
+{    
+=======
 {
 
 	// https://www.desultoryquest.com/blog/drawing-anti-aliased-circular-Vertexs-using-opengl-slash-webgl/
@@ -18,5 +21,6 @@ void main()
 		discard;
 	}    
     
+>>>>>>> 2c5509930b418b34792faf59af91255a2dce8519
 	out_colour = f_colour;
 }
