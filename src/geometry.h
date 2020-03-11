@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #ifndef geometry_h // include guard
 #define geometry_h
 
@@ -49,26 +48,3 @@ bool loadQuadObj(const char* path, vector<GLfloat>& positions,
 
 
 #endif geometry_h
-=======
-#ifndef geometry_h // include guard
-#define geometry_h
-
-#include "common.h"
-#include "geometry.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <iostream>
-#include <vector>
-
-//class Vertex {
-//public:
-//	glm::vec4 position;
-//	glm::vec4 color;
-//	Vertex(glm::vec4 position, glm::vec4 color);
-//};
-//
-//#endif geometry_h
->>>>>>> 2c5509930b418b34792faf59af91255a2dce8519

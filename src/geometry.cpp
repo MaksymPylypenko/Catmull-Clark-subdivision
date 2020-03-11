@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 //#include "renderer.h"
 
 #include "common.h"
@@ -130,23 +129,3 @@ bool loadQuadObj(const char* path, vector<GLfloat>& positions,
 	}
 	return true;
 }
-=======
-#include "renderer.h"
-
-#include "common.h"
-#include "geometry.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <iostream>
-#include <vector>
-
-/// Vertex --> goes to GPU buffer eventually 
-//Vertex::Vertex(glm::vec4 position, glm::vec4 color)
-//{
-//	this->position = position;
-//	this->color = color;
-//}
->>>>>>> 2c5509930b418b34792faf59af91255a2dce8519
