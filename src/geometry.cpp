@@ -4,38 +4,30 @@
 #include "geometry.h"
 
 
-/// Vertex --> goes to GPU buffer eventually 
-//Vertex::Vertex(glm::vec4 position, glm::vec4 color)
-//{
-//	this->position = position;
-//	this->color = color;
-//}
-
-
-
 HalfEdge::HalfEdge(int head, int tail) {
 	this->head = head;
 	this->tail = tail;
 	this->next = NULL;
 	this->flip = NULL;
-	this->root = NULL; // Not really required.., just for convenience 
-	this->isComplete = false;
 };
+
+Face::Face(HalfEdge* root) {
+	this->root = root;
+}
 
 Mesh::Mesh() {};
 
-void Mesh::mergeFace(HalfEdge * newF) {
-	std::cout << "\nMerging... "<< "\n";
-	for (HalfEdge * currFace : faces) {
-		HalfEdge * currEdge = currFace;
-		std::cout << "Root of a face = " << currEdge->head << "\n";
+
+void Mesh::mergeFace(Face * newFace) {
+	for (Face * currFace : faces) {
+		HalfEdge * currEdge = currFace->root;
 		bool loopFaces = true;
 		while (loopFaces) { // find faces that are friends (pairs) <3
 			{
 				if (currEdge->flip != NULL) { // skip if already has a friend
 					int a1 = currEdge->head;
 					int b1 = currEdge->tail;
-					HalfEdge* currEdge2 = newF;
+					HalfEdge* currEdge2 = newFace->root;
 					bool rotateNewFace = true;
 					while (rotateNewFace) {
 						int a2 = currEdge2->head;
@@ -49,7 +41,9 @@ void Mesh::mergeFace(HalfEdge * newF) {
 							rotateNewFace = false;
 						}
 						currEdge2 = currEdge2->next;
-						if (currEdge2 == newF) // we've made a full circle
+						// @TODO
+						// add logic to stop if a new Face has all edges merged
+						if (currEdge2 == newFace->root) // we've made a full circle
 						{
 							rotateNewFace = false;
 						}
@@ -57,24 +51,23 @@ void Mesh::mergeFace(HalfEdge * newF) {
 				}
 			}
 			currEdge = currEdge->next;
-			if (currEdge == currEdge->root) {
+			if (currEdge == currFace->root) {
 				loopFaces = false;
 			}
 		}			
 	}
-	faces.push_back(newF);
+	faces.push_back(newFace);
 }
 
-std::vector<GLuint> Mesh::getElements() {
+void Mesh::updateElements() {
 	std::cout << "Ready to get elements\n";
 	std::cout << "Faces = " << faces.size() << "\n";
-	std::vector<GLuint> elements;
-	for (HalfEdge * face : faces) {
-		HalfEdge * currEdge = face;
-		std::cout << "Face vertex index = " << face->head << "\n";
-		std::cout << "Face address = " << face << "\n";		
+	elements = std::vector<GLuint>(); // remove old
+	for (Face * face : faces) {
+		HalfEdge * currEdge = face->root;
+		std::cout << "Face vertex index = " << face->root->head << "\n";
+		std::cout << "Face root address = " << face->root << "\n";		
 		std::cout << "Circle\n[" << "\n";	
-		std::cout << "	root = " << currEdge->root << "\n";
 		std::cout << "	curr = " << currEdge << "\n";
 		std::cout << "	curr -> next = " << currEdge->next << "\n";
 		std::cout << "	curr -> next -> next = " << currEdge->next->next << "\n";
@@ -87,18 +80,47 @@ std::vector<GLuint> Mesh::getElements() {
 		while (rotateFace) {			
 			elements.push_back(currEdge->head);
 			currEdge = currEdge->next;
-			if (currEdge == face)
+			if (currEdge == face->root)
 			{
 				rotateFace = false;
 			}
 		}
 	}
-	return elements;
 }
 
-bool loadQuadObj(const char* path, vector<GLfloat>& positions,
-	vector<GLuint>& elements, Mesh &mesh)
+
+void Mesh::subDivide() {
+	for (Face * face : faces) {
+		HalfEdge * currEdge = face->root;
+
+		std::vector<int> facePointElements;
+
+		bool rotateFace = true;
+		while (rotateFace) {		
+			facePointElements.push_back(currEdge->head);
+			currEdge = currEdge->next;
+			if (currEdge == face->root)
+			{
+				rotateFace = false;
+			}
+		}
+
+		glm::vec3 facePoint;
+		for (int i : facePointElements) {
+
+		}
+
+
+		
+	}
+}
+
+bool Mesh::loadQuadObj(const char* path)
 {
+	// reset
+	positions = std::vector<GLfloat>(); 
+	elements = std::vector<GLuint>(); 
+	faces = std::vector<Face*>(); 
 
 	std::vector< glm::vec3 > temp_positions;
 
@@ -147,24 +169,15 @@ bool loadQuadObj(const char* path, vector<GLfloat>& positions,
 			HalfEdge * bc = new HalfEdge(b, c); 
 			HalfEdge * cd = new HalfEdge(c, d);
 			HalfEdge * da = new HalfEdge(d, a); 
-
-			ab->root = ab;
-			bc->root = ab;
-			cd->root = ab;
-			da->root = ab;
-			
-			da->next = ab;
+					   			
 			ab->next = bc;
 			bc->next = cd;
 			cd->next = da;
-			
-			//std::cout << "* ab = " << ab << "\n";
-			//std::cout << "* bc = " << bc << "\n";
-			//std::cout << "* cd = " << cd << "\n";
-			//std::cout << "* da = " << da << "\n";
-			//std::cout << "* da->next = " << da->next << "\n";
+			da->next = ab;
 
-			mesh.mergeFace(ab);
+			Face * face = new Face(ab);
+			
+			mergeFace(face);
 		}
 
 	}

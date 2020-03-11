@@ -19,33 +19,49 @@ using namespace std;
 
 class HalfEdge {
 public:
+	HalfEdge::HalfEdge(int head, int tail);
+
 	int head;
 	int tail;
 	HalfEdge* next; // next on the circle (counter clock-wise)
 	HalfEdge* flip; // flip to a different circle	
-	HalfEdge* root; // start of a circle
-	bool isComplete; // true when non of the pointers is NULL
-	HalfEdge::HalfEdge(int head, int tail);
+
+	// might need to add a pointer to the face in the future...
+};
+
+class Face {
+public:
+	Face::Face(HalfEdge* root);
+	HalfEdge* root; // connects face to the rest of the geometry
+	std::vector<HalfEdge*> subDivided;	
 };
 
 class Mesh {
 public:
-	std::vector<HalfEdge *> faces;
-	void mergeFace(HalfEdge * f);
+	std::vector<GLfloat> positions;
+	std::vector<GLuint> elements;
+	std::vector<Face *> faces;
 
-	std::vector<GLuint> getElements();
+	void mergeFace(Face * f);
+
+	void updateElements();
+
+	void subDivide();
+
+	// Load geometry from a .OBJ file --> to C++ vectors
+	// Inspired by these tutorials
+	// https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Load_OBJ
+	// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/
+
+	bool loadQuadObj(const char* path);
+
+
 	Mesh();
 };
 
 
-/// ---------------------------------------------------------------------------------
-/// Load geometry from a .OBJ file --> to C++ vectors
-/// Inspired by these tutorials
-/// https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Load_OBJ
-/// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/
 
-bool loadQuadObj(const char* path, vector<GLfloat>& positions,
-	vector<GLuint>& elements, Mesh& mesh);
+
 
 
 #endif geometry_h
