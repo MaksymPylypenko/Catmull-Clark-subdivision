@@ -3,7 +3,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "common.h"
-#include "renderer.h"
 #include "geometry.h"
 
 #include <iostream>
@@ -21,11 +20,13 @@ GLuint Projection;
 ///----------------------------------------------------------------------------
 /// Building initial geometry
 
+Geometry geometry;
 Mesh mesh;
+
 
 void setupGeometry() {
 	mesh.loadQuadObj("obj/cube.obj");
-	mesh.updateElements(); // just to check if it works
+	mesh.buildGeometry(geometry);
 }
 
 
@@ -42,8 +43,8 @@ void bindGeometry() {
 
 	glBufferData(
 		GL_ARRAY_BUFFER,
-		mesh.positions.size() * sizeof(GLfloat),
-		mesh.positions.data(),
+		geometry.positions.size() * sizeof(GLfloat),
+		geometry.positions.data(),
 		GL_STATIC_DRAW
 	);
 
@@ -53,13 +54,13 @@ void bindGeometry() {
 
 	glBufferData(
 		GL_ELEMENT_ARRAY_BUFFER,
-		mesh.elements.size() * sizeof(GLuint),
-		mesh.elements.data(),
+		geometry.elements.size() * sizeof(GLuint),
+		geometry.elements.data(),
 		GL_STATIC_DRAW
 	);
 
-	std::cout << "positions = " << mesh.positions.size() / 4 << "\n";
-	std::cout << "elements = " << mesh.elements.size();
+	std::cout << "positions = " << geometry.positions.size() / 4 << "\n";
+	std::cout << "elements = " << geometry.elements.size();
 }
 
 
@@ -122,7 +123,7 @@ void display(void) {
 
 	glUniformMatrix4fv(ModelView, 1, GL_FALSE, glm::value_ptr(model_view));
 	
-	for (int i = 0; i < mesh.elements.size(); i += 4) {
+	for (int i = 0; i < geometry.elements.size(); i += 4) {
 		glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_INT, (void*)(i * sizeof(GLuint)));
 	}
 

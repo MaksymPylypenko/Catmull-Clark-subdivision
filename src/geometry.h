@@ -17,6 +17,15 @@
 
 using namespace std;
 
+
+class Geometry {
+public:
+	Geometry::Geometry();
+	std::vector<GLfloat> positions;
+	std::vector<GLuint> elements;
+};
+
+
 class HalfEdge {
 public:
 	HalfEdge::HalfEdge(int head, int tail);
@@ -38,14 +47,12 @@ public:
 
 class Mesh {
 public:
-	std::vector<GLfloat> positions;
-	std::vector<GLuint> elements;
+	Mesh::Mesh();
+	std::vector<glm::vec3> points;
 	std::vector<Face *> faces;
 
+	void buildGeometry(Geometry &geometry);
 	void mergeFace(Face * f);
-
-	void updateElements();
-
 	void subDivide();
 
 	// Load geometry from a .OBJ file --> to C++ vectors
@@ -54,14 +61,6 @@ public:
 	// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/
 
 	bool loadQuadObj(const char* path);
-
-
-	Mesh();
 };
-
-
-
-
-
 
 #endif geometry_h

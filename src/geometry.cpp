@@ -3,6 +3,8 @@
 #include "common.h"
 #include "geometry.h"
 
+Geometry::Geometry() {};
+Mesh::Mesh() {};
 
 HalfEdge::HalfEdge(int head, int tail) {
 	this->head = head;
@@ -14,8 +16,6 @@ HalfEdge::HalfEdge(int head, int tail) {
 Face::Face(HalfEdge* root) {
 	this->root = root;
 }
-
-Mesh::Mesh() {};
 
 
 void Mesh::mergeFace(Face * newFace) {
@@ -59,10 +59,10 @@ void Mesh::mergeFace(Face * newFace) {
 	faces.push_back(newFace);
 }
 
-void Mesh::updateElements() {
-	std::cout << "Ready to get elements\n";
-	std::cout << "Faces = " << faces.size() << "\n";
-	elements = std::vector<GLuint>(); // remove old
+void Mesh::buildGeometry(Geometry &geometry) {
+	
+	std::cout << "Making elements from " << faces.size() << " faces\n\n";
+
 	for (Face * face : faces) {
 		HalfEdge * currEdge = face->root;
 		std::cout << "Face vertex index = " << face->root->head << "\n";
@@ -74,17 +74,25 @@ void Mesh::updateElements() {
 		std::cout << "	curr -> next -> next -> next = " << currEdge->next->next->next << "\n";
 		std::cout << "	curr -> next -> next -> next -> next = " << currEdge->next->next->next->next << "\n";
 		std::cout << "]" << "\n";
-
-		
+				
 		bool rotateFace = true;
 		while (rotateFace) {			
-			elements.push_back(currEdge->head);
+			geometry.elements.push_back(currEdge->head);
 			currEdge = currEdge->next;
 			if (currEdge == face->root)
 			{
 				rotateFace = false;
 			}
 		}
+	}
+
+	std::cout << "Making positions from " << points.size() << " vector<vec3>\n\n";
+	GLfloat w = 1.0;
+	for (glm::vec3 p : points) {
+		geometry.positions.push_back(p.x);
+		geometry.positions.push_back(p.y);
+		geometry.positions.push_back(p.z);
+		geometry.positions.push_back(w);
 	}
 }
 
@@ -108,21 +116,17 @@ void Mesh::subDivide() {
 		glm::vec3 facePoint;
 		for (int i : facePointElements) {
 
-		}
-
-
-		
+		}		
 	}
 }
+
+
 
 bool Mesh::loadQuadObj(const char* path)
 {
 	// reset
-	positions = std::vector<GLfloat>(); 
-	elements = std::vector<GLuint>(); 
+	points = std::vector<glm::vec3>(); 
 	faces = std::vector<Face*>(); 
-
-	std::vector< glm::vec3 > temp_positions;
 
 	FILE* file = fopen(path, "r");
 	if (file == NULL) {
@@ -142,12 +146,7 @@ bool Mesh::loadQuadObj(const char* path)
 		if (strcmp(lineHeader, "v") == 0) {
 			glm::vec3 position;
 			fscanf(file, "%f %f %f\n", &position.x, &position.y, &position.z);
-			temp_positions.push_back(position);
-			GLfloat w = 1.0;
-			positions.push_back(position.x);
-			positions.push_back(position.y);
-			positions.push_back(position.z);
-			positions.push_back(w);
+			points.push_back(position);
 		}
 
 		// Face
@@ -160,10 +159,10 @@ bool Mesh::loadQuadObj(const char* path)
 			}
 			// Need -1,  
 			// C++ indexing starts at 0 and OBJ indexing starts at 1
-			int a = quad[0] - 1; elements.push_back(a);
-			int b = quad[1] - 1; elements.push_back(b);
-			int c = quad[2] - 1; elements.push_back(c);
-			int d = quad[3] - 1; elements.push_back(d);
+			int a = quad[0] - 1; 
+			int b = quad[1] - 1; 
+			int c = quad[2] - 1;
+			int d = quad[3] - 1;
 			
 			HalfEdge * ab = new HalfEdge(a, b); 
 			HalfEdge * bc = new HalfEdge(b, c); 
