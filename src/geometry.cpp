@@ -325,7 +325,7 @@ void Mesh::subDivide() {
 			HalfEdge* ev = new HalfEdge(e);
 			makePair(ev,ve); 
 
-			assert(currEdge->ev == NULL);
+			assert(ev != NULL);
 			currEdge->ev = ev;
 
 			currEdge = currEdge->next;
@@ -351,7 +351,7 @@ void Mesh::subDivide() {
 		loop = true;
 		while (loop) {
 			HalfEdge* ve = currEdge->ev->flip;
-			currEdge->next->ev->next = ve;
+			makeFollow(currEdge->next->ev,ve);
 
 			// 
 			//          e 
@@ -362,7 +362,7 @@ void Mesh::subDivide() {
 			//
 
 			HalfEdge* ep = new HalfEdge(currEdge->ev->head);
-			ve->next = ep;
+			makeFollow(ve, ep);
 
 			// 
 			//          e 
@@ -373,8 +373,8 @@ void Mesh::subDivide() {
 			//
 
 			HalfEdge* pe = new HalfEdge(currEdge->next->newHead);
-			ep->next = pe;
-			pe->next = currEdge->next->ev;
+			makeFollow(ep, pe);
+			makeFollow(pe, currEdge->next->ev);
 
 			// If we repeat this for each Half Edge of an original Face, we would get
 			//
@@ -427,15 +427,17 @@ void Mesh::subDivide() {
 
 			HalfEdge * outsideEdge = currEdge->flip;
 
-			HalfEdge* ae = rotateAroundHead(currEdge->ev);
+			HalfEdge* ae = currEdge->ev->prev;
 			if (ae->flip == NULL) {
 				HalfEdge* ec = outsideEdge->ev->flip->next;
 				makePair(ae, ec);
 			}
-			
+
+		    // issue here?
+
 			HalfEdge* eb = currEdge->ev->flip->next;
 			if (eb->flip == NULL) {
-				HalfEdge* de = rotateAroundHead(outsideEdge->ev);
+				HalfEdge* de = outsideEdge->prev;
 				makePair(eb, de);
 			}
 				  		
