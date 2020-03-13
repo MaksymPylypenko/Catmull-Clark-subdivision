@@ -25,24 +25,38 @@ public:
 	std::vector<GLuint> elements;
 };
 
+class Face;
 
 class HalfEdge {
 public:
-	HalfEdge::HalfEdge(int head, int tail);
+	HalfEdge::HalfEdge();
+	HalfEdge::HalfEdge(int head);
 
 	int head;
-	int tail;
+	HalfEdge* prev;
 	HalfEdge* next; // next on the circle (counter clock-wise)
 	HalfEdge* flip; // flip to a different circle	
 
-	// might need to add a pointer to the face in the future...
+	// For subdivision
+	Face* face; 
+	HalfEdge* ev;  // edge from curr to face point
+	int newHead = -1;
 };
+
+// Utility functions
+void makePair(HalfEdge* a, HalfEdge* b);
+void makeFollow(HalfEdge* a, HalfEdge* b);
+HalfEdge* rotateAroundHead(HalfEdge* curr);
+Face* makeFace(HalfEdge* root);
 
 class Face {
 public:
 	Face::Face(HalfEdge* root);
 	HalfEdge* root; // connects face to the rest of the geometry
-	std::vector<HalfEdge*> subDivided;	
+
+	// For subdivision
+	int facePoint = -1; // index in a temp array
+	int barycenter = -1; //  index in a temp array
 };
 
 class Mesh {
@@ -52,7 +66,7 @@ public:
 	std::vector<Face *> faces;
 
 	void buildGeometry(Geometry &geometry);
-	void mergeFace(Face * f);
+	void mergeFace(Face * f);	
 	void subDivide();
 
 	// Load geometry from a .OBJ file --> to C++ vectors
@@ -62,5 +76,8 @@ public:
 
 	bool loadQuadObj(const char* path);
 };
+
+
+glm::vec3 getAverage(std::vector<glm::vec3> points);
 
 #endif geometry_h

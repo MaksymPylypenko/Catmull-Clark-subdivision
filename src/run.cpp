@@ -23,9 +23,9 @@ GLuint Projection;
 Geometry geometry;
 Mesh mesh;
 
-
 void setupGeometry() {
 	mesh.loadQuadObj("obj/cube.obj");
+	mesh.subDivide();
 	mesh.buildGeometry(geometry);
 }
 
