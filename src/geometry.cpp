@@ -41,13 +41,13 @@ Face* makeFace(HalfEdge* root) {
 }
 
 HalfEdge* rotateAroundHead(HalfEdge* curr) {
-	bool isAdjecent = false;
+	bool isTail = false;
 	HalfEdge* currEdge = curr;
 	int center = curr->head;
-	while (!isAdjecent) {
+	while (!isTail) {
 		currEdge = currEdge->next;
 		if (currEdge->next->head == center) {
-			isAdjecent = true;
+			isTail = true;
 		}
 	}
 	return currEdge;
@@ -103,17 +103,31 @@ void Mesh::buildGeometry(Geometry &geometry) {
 	std::cout << "Making elements from " << faces.size() << " faces\n\n";
 
 	for (Face * face : faces) {
-		HalfEdge * currEdge = face->root;
+		HalfEdge * currEdge = face->root; 
+		HalfEdge* ringEdge = face->root;
+		HalfEdge * rotEdge = face->root;
 		std::cout << "Face vertex index = " << face->root->head << "\n";
 		std::cout << "Face root address = " << face->root << "\n";		
 		std::cout << "Circle\n[" << "\n";	
-		std::cout << "	curr = " << currEdge << "\n";
-		std::cout << "	curr -> flip = " << currEdge->flip << "\n";
-		std::cout << "	curr -> flip -> flip = " << currEdge->flip->flip << "\n";
-		std::cout << "	curr -> next = " << currEdge->next << "\n";
-		std::cout << "	curr -> next -> next = " << currEdge->next->next << "\n";
-		std::cout << "	curr -> next -> next -> next = " << currEdge->next->next->next << "\n";
-		std::cout << "	curr -> next -> next -> next -> next = " << currEdge->next->next->next->next << "\n";
+		std::cout << "	curr ->     		= " << currEdge << " <--\n";
+		std::cout << "	curr -> flip		= " << currEdge->flip << "\n";
+		std::cout << "	curr -> flip x2		= " << currEdge->flip->flip << " <--\n";
+		rotEdge = rotateAroundHead(rotEdge)->flip;
+		std::cout << "	curr -> rotate x1	= " << rotEdge << "\n";
+		rotEdge = rotateAroundHead(rotEdge)->flip;
+		std::cout << "	curr -> rotate x2	= " << rotEdge << "\n";
+		rotEdge = rotateAroundHead(rotEdge)->flip;
+		std::cout << "	curr -> rotate x3	= " << rotEdge << " <--\n";
+		rotEdge = rotateAroundHead(rotEdge)->flip;
+		std::cout << "	curr -> rotate x4	= " << rotEdge << " <--\n";
+		ringEdge = ringEdge->next;
+		std::cout << "	curr -> next x1		= " << ringEdge << "\n";
+		ringEdge = ringEdge->next;
+		std::cout << "	curr -> next x2		= " << ringEdge << "\n";
+		ringEdge = ringEdge->next;
+		std::cout << "	curr -> next x3		= " << ringEdge << "\n";
+		ringEdge = ringEdge->next;
+		std::cout << "	curr -> next x4		= " << ringEdge << " <--\n";
 		std::cout << "]" << "\n";
 				
 		bool rotateFace = true;
@@ -160,7 +174,16 @@ void Mesh::subDivide() {
 	std::vector<Face*> outFaces;
 
 
-	// #1 Find a face point
+	// #1. Find a face point
+	// 
+	//     p - - - - p
+	//	   .         . 
+	//	   .    v    .    <-- average of all points (p) that create a face 
+	//	   .         .
+	//     p - - - - p
+	//       
+
+
 	for (Face* face : faces) {
 		HalfEdge* currEdge = face->root;
 
@@ -175,118 +198,24 @@ void Mesh::subDivide() {
 			}
 		}
 		
-		assert(ring.size() == 4); // Do not support triangles yet..
+		assert(ring.size() == 4 && "The number of face points != 4"); 
 		
 		glm::vec3 V = getAverage(ring); 
 		outPoints.push_back(V);
 		face->facePoint = outPoints.size()-1;
 	}
-	
-	// #2 Find edge points
-	for (Face* face : faces) {
-		HalfEdge* currEdge = face->root;
-			   
-		loop = true;
-		while (loop) {	
 
-			// need 2 original endpoints
-			int d1 = currEdge->head;
-			int d2 = currEdge->next->head;
 
-			// need two neighbouring face points
-			int v1 = currEdge->face->facePoint;
-			int v2 = currEdge->flip->face->facePoint;
-
-			array = { points[d1], points[d2], outPoints[v1], outPoints[v2] };
-			glm::vec3 E = getAverage(array);
-			E.x = 1 / 4 * E.x;
-			E.y = 1 / 4 * E.y;
-			E.z = 1 / 4 * E.z;
-
-			outPoints.push_back(E);
-			int e = outPoints.size()-1;
-
-			// #3 Connect the edge point to the face point (e.g. make halfedges)
-			int v = currEdge->face->facePoint;
-			HalfEdge* ve = new HalfEdge(v);
-			HalfEdge* ev = new HalfEdge(e);
-			makePair(ev,ve); 
-
-			currEdge->ev = ev;
-
-			currEdge = currEdge->next;
-			if (currEdge == face->root)
-			{
-				loop = false;
-			}
-		}
-	}
-
-	// We have this now...
-	// 
-	//          e 
-	//		 __| |__
-	//	   e __ v __ e
-	//		   | |
-	//          e    b
-	//
-	// However ev->next is still NULL
-
-	for (Face* face : faces) {
-		HalfEdge* currEdge = face->root;
-			
-		loop = true;
-		while (loop) {
-			HalfEdge* ve = currEdge->ev->flip;
-			currEdge->next->ev->next = ve;
-
-			// 
-			//          e 
-			//		 __| |__
-			//	   e __ v __ e
-			//		   | |__
-			//          e    b
-			//
-
-			HalfEdge * eb = new HalfEdge(currEdge->next->head);
-			ve->next = eb;
-
-			// 
-			//          e 
-			//		 __| |__
-			//	   e __ v __ e
-			//		   | |__|
-			//          e    b
-			//
-
-			HalfEdge * be = new HalfEdge(currEdge->next->ev->head);
-			eb->next = be;
-			be->next = currEdge->next->ev;
-
-			// If we repeat this for each Half Edge of an original Face, we would get
-			//
-			//       __ e __
-			//		|__| |__|
-			//	   e __ v __ e
-			//		|__| |__|
-			//          e
-			//
-
-			currEdge = currEdge->next;
-			if (currEdge == face->root)
-			{
-				loop = false;
-			}
-		}		
-	}
-
-	// 4. We are going to find new positions for each original point p
-	//
-	//     p __ e __ p
-	//		|__| |__|
-	//	   e __ v __ e
-	//		|__| |__|
-	//     p    e    p
+	// #2. We are going to find new positions for each original point p.
+	// For this we would need to find all adjecent faces and midpoints (from original edges)...
+	//         	
+	//          | |
+	//    Face   M  Face
+	//	 __   __| |__   __
+	//	 __ M __ P __ M __
+	//		    | |
+	//    Face   M  Face
+	//          | |  
 	//
 	
 	for (Face* face : faces) {
@@ -294,28 +223,16 @@ void Mesh::subDivide() {
 
 		// For every point on the ORIGINAL mesh 
 		loop = true;
-		while (loop) { 
+		while (loop) {
 			if (currEdge->newHead == -1) // Check whether a point was already updated
 			{
-
-				// We need to find all adjecent faces and midpoints (from original edges)
-				//
-				//          | |
-				//    Face  . .  Face
- 				//	 __ . __| |__ . __
-				//	 __ . __ P __ . __
-				//		    | |
-				//    Face  . .  Face
-				//          | |  
-				//
-
 				std::vector<glm::vec3> tempFacePoints; // for face points touching an original point
 				std::vector<glm::vec3> tempMidPoints; // for medians of original edges that touch a point
 
 				int n = 0; // also count how many face are connected
 				bool innerLoop = true;
 				HalfEdge* currInnerEdge = currEdge;
-				while (innerLoop) {		
+				while (innerLoop) {
 					int f = currInnerEdge->face->facePoint;
 					tempFacePoints.push_back(outPoints[f]);
 
@@ -329,13 +246,13 @@ void Mesh::subDivide() {
 					currInnerEdge = rotateAroundHead(currInnerEdge);
 					currInnerEdge = currInnerEdge->flip;
 					n++;
+					assert(n < 5);
 
 					if (currInnerEdge == currEdge) {
 						innerLoop = false; // Done, we've made a circle around a vertex
 					}
 				}
 
-				assert(n == 4); // do not support triangles yet
 
 				// Calculate averages
 				glm::vec3 F = getAverage(tempFacePoints);
@@ -362,6 +279,121 @@ void Mesh::subDivide() {
 		}
 	}
 	
+	// #3. Find edge points
+	// 
+	//			e  
+	//	            
+	//	   e    v    e    
+	//	        
+	//			e  
+	//         
+
+	for (Face* face : faces) {
+		HalfEdge* currEdge = face->root;
+			   
+		loop = true;
+		while (loop) {	
+
+			// need 2 original endpoints
+			int d1 = currEdge->head;
+			int d2 = currEdge->next->head;
+
+			// need two neighbouring face points
+			int v1 = currEdge->face->facePoint;
+			int v2 = currEdge->flip->face->facePoint;
+
+			array = { points[d1], points[d2], outPoints[v1], outPoints[v2] };
+			glm::vec3 E = getAverage(array);
+			E.x = 1 / 4 * E.x;
+			E.y = 1 / 4 * E.y;
+			E.z = 1 / 4 * E.z;
+
+			outPoints.push_back(E);
+			int e = outPoints.size()-1;		
+			int v = currEdge->face->facePoint;
+
+			// We can create the first half edges of the new mesh
+			// 
+			//          e 
+			//		 __| |__
+			//	   e __ v __ e
+			//		   | |
+			//          e    
+			//
+
+			HalfEdge* ve = new HalfEdge(v);
+			HalfEdge* ev = new HalfEdge(e);
+			makePair(ev,ve); 
+
+			currEdge->ev = ev;
+
+			currEdge = currEdge->next;
+			if (currEdge == face->root)
+			{
+				loop = false;
+			}
+		}
+	}
+	
+	// #4. We can use recently created points to extend our half edges:  
+	//
+	//     p __ e __ p
+	//		|__| |__|
+	//	   e __ v __ e
+	//		|__| |__|
+	//     p    e    p
+	//
+
+	for (Face* face : faces) {
+		HalfEdge* currEdge = face->root;
+
+		loop = true;
+		while (loop) {
+			HalfEdge* ve = currEdge->ev->flip;
+			currEdge->next->ev->next = ve;
+
+			// 
+			//          e 
+			//		 __| |__
+			//	   e __ v __ e
+			//		   | |__
+			//          e    p
+			//
+
+			HalfEdge* ep = new HalfEdge(currEdge->ev->head);
+			ve->next = ep;
+
+			// 
+			//          e 
+			//		 __| |__
+			//	   e __ v __ e
+			//		   | |__|
+			//          e    p
+			//
+
+			HalfEdge* pe = new HalfEdge(currEdge->next->newHead);
+			ep->next = pe;
+			pe->next = currEdge->next->ev;
+
+			// If we repeat this for each Half Edge of an original Face, we would get
+			//
+			//       __ e __
+			//		|__| |__|
+			//	   e __ v __ e
+			//		|__| |__|
+			//          e
+			//
+
+			currEdge = currEdge->next;
+			if (currEdge == face->root)
+			{
+				loop = false;
+			}
+		}
+	}
+	
+
+
 	// 5. Our groups of half edges are still isolated.
 	// To make a mesh we need to find all the pairs from other faces:
 	//       __   __
@@ -392,8 +424,7 @@ void Mesh::subDivide() {
 			//     .    .    .
 			//     .    .    .
 
-			HalfEdge * outsideEdge = currEdge;
-			outsideEdge = outsideEdge->flip;
+			HalfEdge * outsideEdge = currEdge->flip;
 
 			HalfEdge* ae = rotateAroundHead(currEdge->ev);
 			if (ae->flip == NULL) {
@@ -415,15 +446,18 @@ void Mesh::subDivide() {
 		}		
 	}
 	
-	// #6 We are almost done. Just need to define faces
+	// #6. We are almost done. Just need to define faces
 	for (Face* face : faces) {
 		HalfEdge* currEdge = face->root;
-		HalfEdge* root = currEdge->ev;
-		Face* subdividedFace = makeFace(root);
-		outFaces.push_back(subdividedFace);
-		currEdge = currEdge->next;
-		if (currEdge == face->root) {
-			loop = false; // Done, we are at the root edge of the face
+		loop = true;
+		while (loop) {
+			HalfEdge* root = currEdge->ev;
+			Face* subdividedFace = makeFace(root);
+			outFaces.push_back(subdividedFace);
+			currEdge = currEdge->next;
+			if (currEdge == face->root) {
+				loop = false; // Done, we are at the root edge of the face
+			}
 		}
 	}
 
@@ -485,13 +519,7 @@ bool Mesh::loadQuadObj(const char* path)
 			makeFollow(c, d);
 			makeFollow(d, a);
 
-			Face * face = new Face(a);
-
-			a->face = face;
-			b->face = face;
-			c->face = face;
-			d->face = face;
-			
+			Face* face = makeFace(a);			
 			mergeFace(face);
 		}
 
