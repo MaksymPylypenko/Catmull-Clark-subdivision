@@ -10,7 +10,6 @@ HalfEdge::HalfEdge() {};
 HalfEdge::HalfEdge(int head) {
 	this->head = head;
 	this->next = NULL;
-	this->prev = NULL;
 	this->flip = NULL;
 	this->ev = NULL;
 	this->face = NULL;
@@ -218,6 +217,7 @@ void Mesh::subDivide() {
 	//          | |  
 	//
 	
+	// @TODO doublecheck
 	for (Face* face : faces) {
 		HalfEdge* currEdge = face->root;
 
@@ -246,7 +246,7 @@ void Mesh::subDivide() {
 					currInnerEdge = rotateAroundHead(currInnerEdge);
 					currInnerEdge = currInnerEdge->flip;
 					n++;
-					assert(n < 5);
+					assert(n < 4);
 
 					if (currInnerEdge == currEdge) {
 						innerLoop = false; // Done, we've made a circle around a vertex
@@ -309,7 +309,7 @@ void Mesh::subDivide() {
 			E.z = 1 / 4 * E.z;
 
 			outPoints.push_back(E);
-			int e = outPoints.size()-1;		
+			int e = outPoints.size()-1; // index 
 			int v = currEdge->face->facePoint;
 
 			// We can create the first half edges of the new mesh
@@ -325,6 +325,7 @@ void Mesh::subDivide() {
 			HalfEdge* ev = new HalfEdge(e);
 			makePair(ev,ve); 
 
+			assert(currEdge->ev == NULL);
 			currEdge->ev = ev;
 
 			currEdge = currEdge->next;
@@ -451,8 +452,7 @@ void Mesh::subDivide() {
 		HalfEdge* currEdge = face->root;
 		loop = true;
 		while (loop) {
-			HalfEdge* root = currEdge->ev;
-			Face* subdividedFace = makeFace(root);
+			Face* subdividedFace = makeFace(currEdge->ev);
 			outFaces.push_back(subdividedFace);
 			currEdge = currEdge->next;
 			if (currEdge == face->root) {

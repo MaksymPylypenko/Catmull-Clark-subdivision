@@ -33,7 +33,6 @@ public:
 	HalfEdge::HalfEdge(int head);
 
 	int head;
-	HalfEdge* prev;
 	HalfEdge* next; // next on the circle (counter clock-wise)
 	HalfEdge* flip; // flip to a different circle	
 
@@ -48,6 +47,7 @@ void makePair(HalfEdge* a, HalfEdge* b);
 void makeFollow(HalfEdge* a, HalfEdge* b);
 HalfEdge* rotateAroundHead(HalfEdge* curr);
 Face* makeFace(HalfEdge* root);
+glm::vec3 getAverage(std::vector<glm::vec3> points);
 
 class Face {
 public:
@@ -77,7 +77,5 @@ public:
 	bool loadQuadObj(const char* path);
 };
 
-
-glm::vec3 getAverage(std::vector<glm::vec3> points);
 
 #endif geometry_h
