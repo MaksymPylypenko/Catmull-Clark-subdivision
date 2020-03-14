@@ -40,6 +40,7 @@ public:
 	// For subdivision
 	Face* face; 
 	HalfEdge* ev;  // edge from curr to face point
+	int edgePoint = -1;
 	int newHead = -1;
 };
 
@@ -48,6 +49,10 @@ void makePair(HalfEdge* a, HalfEdge* b);
 void makeFollow(HalfEdge* a, HalfEdge* b);
 HalfEdge* rotateAroundHead(HalfEdge* curr);
 Face* makeFace(HalfEdge* root);
+bool allHavePairs(HalfEdge* root);
+
+//Debug
+void printRing(HalfEdge* root);
 
 class Face {
 public:
@@ -67,7 +72,15 @@ public:
 
 	void buildGeometry(Geometry &geometry);
 	void mergeFace(Face * f);	
+
+	// For subdivision
 	void subDivide();
+	void findFacePoints(std::vector<glm::vec3>& outPoints);
+	void findVertexPoints(std::vector<glm::vec3>& outPoints);
+	void findEdgePoints(std::vector<glm::vec3>& outPoints);
+	void mergeCorners(std::vector<glm::vec3>& outPoints);
+	void mergeSquares(std::vector<glm::vec3>& outPoints);
+	void populateFaces(std::vector<Face*>& outFaces);
 
 	// Load geometry from a .OBJ file --> to C++ vectors
 	// Inspired by these tutorials
@@ -75,6 +88,7 @@ public:
 	// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/
 
 	bool loadQuadObj(const char* path);
+	bool loadTriangObj(const char* path);
 };
 
 

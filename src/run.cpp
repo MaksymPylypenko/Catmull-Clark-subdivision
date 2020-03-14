@@ -22,10 +22,15 @@ GLuint Projection;
 
 Geometry geometry;
 Mesh mesh;
+int lineLoop = 4; 
 
-void setupGeometry() {
+void setupGeometry() {	
+	//mesh.loadTriangObj("obj/dodecahedron.obj");
+	//mesh.loadTriangObj("obj/teapot.obj");
+	// lineLoop = 3;
+
 	mesh.loadQuadObj("obj/cube.obj");
-	mesh.subDivide();
+	mesh.subDivide();	
 	mesh.buildGeometry(geometry);
 }
 
@@ -123,11 +128,12 @@ void display(void) {
 
 	glUniformMatrix4fv(ModelView, 1, GL_FALSE, glm::value_ptr(model_view));
 	
-	for (int i = 0; i < geometry.elements.size(); i += 4) {
-		glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_INT, (void*)(i * sizeof(GLuint)));
+
+	for (int i = 0; i < geometry.elements.size(); i += lineLoop) {
+		glDrawElements(GL_LINE_LOOP, lineLoop, GL_UNSIGNED_INT, (void*)(i * sizeof(GLuint)));
 	}
 
-	//glDrawElements(GL_TRIANGLES, elements.size(), GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_QUADS, geometry.elements.size(), GL_UNSIGNED_INT, 0);
 	glutSwapBuffers();
 }
 
@@ -137,6 +143,7 @@ void display(void) {
 
 
 int mode;
+bool pause = false;
 void keyboard(unsigned char key, int x, int y)
 {
 	switch (key) {
@@ -145,6 +152,9 @@ void keyboard(unsigned char key, int x, int y)
 		exit(EXIT_SUCCESS);
 		break;
 	case ' ':  // hold
+		pause = !pause;
+		break;
+	case 'r':  // hold
 		mode++;
 		if (mode > 2) {
 			mode = 0;
@@ -166,11 +176,13 @@ void mouse(int button, int state, int x, int y)
 
 void update(void)
 {
-	Theta[Axis] += 0.5;
+	if (!pause) {
+		Theta[Axis] += 0.5;
 
-	if (Theta[Axis] > 360.0) {
-		Theta[Axis] -= 360.0;
-	}
+		if (Theta[Axis] > 360.0) {
+			Theta[Axis] -= 360.0;
+		}
+	}	
 }
 
 
