@@ -46,7 +46,7 @@ Face* makeFace(HalfEdge* root) {
 			loop = false;
 		}
 	}
-	assert(n == 4);
+	//assert(n == 4);
 	return myFace;
 }
 
@@ -217,7 +217,7 @@ void Mesh::findFacePoints(std::vector<glm::vec3> &outPoints) {
 			}
 		}
 
-		assert(ring.size() == 4 && "The number of face points != 4");
+		//assert(ring.size() == 4 && "The number of face points != 4");
 
 		glm::vec3 V = getAverage(ring);
 		outPoints.push_back(V);
@@ -265,7 +265,7 @@ void Mesh::findVertexPoints(std::vector<glm::vec3> &outPoints) {
 					currInnerEdge = currInnerEdge->prev;
 					currInnerEdge = currInnerEdge->flip;
 					n++;
-					assert(n <= 4);
+					//assert(n <= 4);
 
 					if (currInnerEdge == currEdge) {
 						innerLoop = false; // Done, we've made a circle around a vertex

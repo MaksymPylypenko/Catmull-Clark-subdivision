@@ -20,16 +20,26 @@ GLuint Projection;
 ///----------------------------------------------------------------------------
 /// Building initial geometry
 
+enum Models { Qube, Teapot };
+
+int currDepth = 0;
+int currModel = Qube;
+
 Geometry geometry;
 Mesh mesh;
-int lineLoop = 4; 
+int lineLoop = 3; 
 
-void setupGeometry(int depth) {
-	//mesh.loadTriangObj("obj/dodecahedron.obj");
-	//mesh.loadTriangObj("obj/teapot.obj");
-	//lineLoop = 3;
-	mesh.loadQuadObj("obj/cube.obj");
-	for (int i = 0; i < depth; i++)
+
+void setupGeometry() {
+	if (currModel == Qube) {
+		lineLoop = 4;
+		mesh.loadQuadObj("obj/cube.obj");
+	}
+	else if (currModel == Teapot){
+		lineLoop = 3;
+		mesh.loadTriangObj("obj/teapot.obj");
+	}
+	for (int i = 0; i < currDepth; i++)
 	{
 		mesh.subDivide();
 	}
@@ -80,7 +90,7 @@ void init() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO);
 
 	// Setup and load geomerty to GPU		
-	setupGeometry(0);
+	setupGeometry();
 	bindGeometry();
 
 	// Load shaders and use the resulting shader program
@@ -139,8 +149,6 @@ void display(void) {
 ///----------------------------------------------------------------------------
 /// Interaction
 
-int depth = 0;
-int mode;
 bool pause = false;
 void keyboard(unsigned char key, int x, int y)
 {
@@ -154,22 +162,34 @@ void keyboard(unsigned char key, int x, int y)
 		pause = !pause;
 		break;
 	case 'w': case 'W':
-		depth++;
-		setupGeometry(depth);
+		currDepth++;
+		setupGeometry();
 		bindGeometry();
 		break;
 	case 's': case 'S':		
-		if (depth >= 1) {
-			depth--;
-			setupGeometry(depth);
+		if (currDepth >= 1) {
+			currDepth--;
+			setupGeometry();
 			bindGeometry();
 		}		
 		break;
-	case 'r':  // hold
-		mode++;
-		if (mode > 2) {
-			mode = 0;
+	case 'd':  // next model
+		currModel++;
+		currDepth = 0;
+		if (currModel = currModel % 2) {
+	
 		}
+		setupGeometry();
+		bindGeometry();
+		break;
+	case 'a':  // prev model
+		currDepth = 0;
+		currModel--;
+		if (currModel == -1) {
+			currModel = 1;
+		}
+		setupGeometry();
+		bindGeometry();
 		break;
 	}
 }
