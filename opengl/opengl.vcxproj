@@ -101,6 +101,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\geometry.cpp" />
     <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\models.cpp" />
     <ClCompile Include="..\src\run.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

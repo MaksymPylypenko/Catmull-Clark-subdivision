@@ -48,7 +48,7 @@ public:
 void makePair(HalfEdge* a, HalfEdge* b);
 void makeFollow(HalfEdge* a, HalfEdge* b);
 HalfEdge* rotateAroundHead(HalfEdge* curr);
-Face* makeFace(HalfEdge* root);
+Face* populateFace(HalfEdge* root);
 bool allHavePairs(HalfEdge* root);
 
 //Debug
@@ -71,7 +71,12 @@ public:
 	std::vector<glm::vec3> points;
 	std::vector<Face *> faces;
 
+	// For building geometry
+	int addPoint(glm::vec3 point); // returns id;
+	int addPoint(glm::vec3 point, std::vector<glm::vec3> &array); // returns id;
 	void buildGeometry(Geometry &geometry);
+	Face* buildFace(std::vector<glm::vec3> facePoints);
+	Face* buildFace(std::vector<int> indecies);
 	void mergeFace(Face * f);	
 
 	// For subdivision
@@ -93,6 +98,9 @@ public:
 
 	bool loadQuadObj(const char* path);
 	bool loadTriangObj(const char* path);
+
+	// Default models
+	void Mesh::loadCrossModel();
 };
 
 

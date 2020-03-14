@@ -20,7 +20,7 @@ GLuint Projection;
 ///----------------------------------------------------------------------------
 /// Building initial geometry
 
-enum Models { Cube, Teapot };
+enum Models { Cube, Cross, Teapot};
 
 int currDepth = 0;
 int currModel = Cube;
@@ -39,11 +39,16 @@ void setupGeometry() {
 		lineLoop = 3;
 		mesh.loadTriangObj("obj/teapot.obj");
 	}
+	else if (currModel == Cross) {
+		lineLoop = 4;
+		mesh.loadCrossModel();
+	}
 	for (int i = 0; i < currDepth; i++)
 	{
 		mesh.subDivide();
 	}
 	mesh.buildGeometry(geometry);
+	
 }
 
 
@@ -65,8 +70,10 @@ void bindGeometry() {
 		geometry.elements.data(),
 		GL_STATIC_DRAW
 	);
-	std::cout << "\npositions = " << geometry.positions.size() / 4 << "\n";
-	std::cout << "elements = " << geometry.elements.size();
+	std::cout << "\n-------------------\n";
+	std::cout << "Positions = " << mesh.points.size() << "\n";
+	std::cout << "Faces = " << mesh.faces.size() << "\n";
+	std::cout << "Elements = " << geometry.elements.size() << "\n";
 }
 
 
@@ -180,7 +187,7 @@ void keyboard(unsigned char key, int x, int y)
 		bindGeometry();
 		break;
 	case '2':  
-		currModel = Teapot;
+		currModel = Cross;
 		currDepth = 0;
 		setupGeometry();
 		bindGeometry();

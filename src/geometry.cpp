@@ -1,5 +1,3 @@
-//#include "renderer.h"
-
 #include "common.h"
 #include "geometry.h"
 
@@ -33,7 +31,7 @@ void makeFollow(HalfEdge* a, HalfEdge* b) {
 	b->prev = a;
 }
 
-Face* makeFace(HalfEdge* root) {
+Face* populateFace(HalfEdge* root) {
 	bool loop = true;
 	Face* myFace = new Face(root);
 	int n = 0;
@@ -492,7 +490,7 @@ void Mesh::populateFaces(std::vector<Face*> &outFaces) {
 		HalfEdge* currEdge = face->root;
 		bool loop = true;	
 		while (loop) {
-			Face* subdividedFace = makeFace(currEdge->ev);
+			Face* subdividedFace = populateFace(currEdge->ev);
 			outFaces.push_back(subdividedFace);
 			currEdge = currEdge->next;
 
@@ -529,122 +527,3 @@ void Mesh::popSubDivision() {
 	}	
 }
 
-
-
-bool Mesh::loadQuadObj(const char* path)
-{
-	// reset
-	points = std::vector<glm::vec3>(); 
-	faces = std::vector<Face*>(); 
-
-	FILE* file = fopen(path, "r");
-	if (file == NULL) {
-		printf("Impossible to open the file !\n");
-		return false;
-	}
-
-	while (1) {
-
-		char lineHeader[128];
-		// read the first word of the line
-		int res = fscanf(file, "%s", lineHeader);
-		if (res == EOF)
-			break; // EOF = End Of File. Quit the loop.
-
-
-		if (strcmp(lineHeader, "v") == 0) {
-			glm::vec3 position;
-			fscanf(file, "%f %f %f\n", &position.x, &position.y, &position.z);
-			points.push_back(position);
-		}
-
-		// Face
-		else if (strcmp(lineHeader, "f") == 0) {
-			GLuint quad[4];
-			int matches = fscanf(file, "%d %d %d %d \n", &quad[0], &quad[1], &quad[2], &quad[3]);
-			if (matches != 4) {
-				printf("Sorry, I do not support this obj\n");
-				return false;
-			}
-			// Need -1,  
-			// C++ indexing starts at 0 and OBJ indexing starts at 1
-			int A = quad[0] - 1; 
-			int B = quad[1] - 1; 
-			int C = quad[2] - 1;
-			int D = quad[3] - 1;
-			
-			HalfEdge * a = new HalfEdge(A); 
-			HalfEdge * b = new HalfEdge(B); 
-			HalfEdge * c = new HalfEdge(C);
-			HalfEdge * d = new HalfEdge(D); 
-					   		
-			makeFollow(a, b);
-			makeFollow(b, c);
-			makeFollow(c, d);
-			makeFollow(d, a);
-
-			Face* face = makeFace(a);			
-			mergeFace(face);
-		}
-
-	}
-	return true;
-}
-
-
-bool Mesh::loadTriangObj(const char* path)
-{
-	// reset
-	points = std::vector<glm::vec3>();
-	faces = std::vector<Face*>();
-
-	FILE* file = fopen(path, "r");
-	if (file == NULL) {
-		printf("Impossible to open the file !\n");
-		return false;
-	}
-
-	while (1) {
-
-		char lineHeader[128];
-		// read the first word of the line
-		int res = fscanf(file, "%s", lineHeader);
-		if (res == EOF)
-			break; // EOF = End Of File. Quit the loop.
-
-
-		if (strcmp(lineHeader, "v") == 0) {
-			glm::vec3 position;
-			fscanf(file, "%f %f %f\n", &position.x, &position.y, &position.z);
-			points.push_back(position);
-		}
-
-		// Face
-		else if (strcmp(lineHeader, "f") == 0) {
-			GLuint pos[3];
-			int matches = fscanf(file, "%d %d %d \n", &pos[0], &pos[1], &pos[2]);
-			if (matches != 3) {
-				printf("Sorry, I do not support this obj\n");
-				return false;
-			}
-			// Need -1,  
-			// C++ indexing starts at 0 and OBJ indexing starts at 1
-			int A = pos[0] - 1;
-			int B = pos[1] - 1;
-			int C = pos[2] - 1;
-
-			HalfEdge* a = new HalfEdge(A);
-			HalfEdge* b = new HalfEdge(B);
-			HalfEdge* c = new HalfEdge(C);
-
-			makeFollow(a, b);
-			makeFollow(b, c);
-			makeFollow(c, a);
-
-			Face* face = makeFace(a);
-			mergeFace(face);
-		}
-
-	}
-	return true;
-}
