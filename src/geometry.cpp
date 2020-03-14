@@ -521,12 +521,11 @@ void Mesh::subDivide() {
 }
 
 void Mesh::popSubDivision() {
-	if (oldCopy!=NULL) {
-		
+	if (oldCopy!=NULL) {		
 		points = oldCopy->points;
 		faces = oldCopy->faces;
 		oldCopy = oldCopy->oldCopy;
-		std::cout << "points size =" << points.size() << "\n";
+		//std::cout << "points size =" << points.size() << "\n";
 	}	
 }
 

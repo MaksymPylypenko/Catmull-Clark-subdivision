@@ -24,12 +24,15 @@ Geometry geometry;
 Mesh mesh;
 int lineLoop = 4; 
 
-void setupGeometry() {	
+void setupGeometry(int depth) {
 	//mesh.loadTriangObj("obj/dodecahedron.obj");
 	//mesh.loadTriangObj("obj/teapot.obj");
 	//lineLoop = 3;
-
 	mesh.loadQuadObj("obj/cube.obj");
+	for (int i = 0; i < depth; i++)
+	{
+		mesh.subDivide();
+	}
 	mesh.buildGeometry(geometry);
 }
 
@@ -38,12 +41,14 @@ void setupGeometry() {
 /// Loads current geometry to the GPU
 
 void bindGeometry() {
+
 	glBufferData(
 		GL_ARRAY_BUFFER,
 		geometry.positions.size() * sizeof(GLfloat),
 		geometry.positions.data(),
 		GL_STATIC_DRAW
 	);	   
+
 	glBufferData(
 		GL_ELEMENT_ARRAY_BUFFER,
 		geometry.elements.size() * sizeof(GLuint),
@@ -74,9 +79,8 @@ void init() {
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO);
 
-
 	// Setup and load geomerty to GPU		
-	setupGeometry();
+	setupGeometry(0);
 	bindGeometry();
 
 	// Load shaders and use the resulting shader program
@@ -135,7 +139,7 @@ void display(void) {
 ///----------------------------------------------------------------------------
 /// Interaction
 
-
+int depth = 0;
 int mode;
 bool pause = false;
 void keyboard(unsigned char key, int x, int y)
@@ -150,14 +154,16 @@ void keyboard(unsigned char key, int x, int y)
 		pause = !pause;
 		break;
 	case 'w': case 'W':
-		mesh.subDivide();
-		mesh.buildGeometry(geometry);
+		depth++;
+		setupGeometry(depth);
 		bindGeometry();
 		break;
-	case 's': case 'S':
-		mesh.popSubDivision();
-		mesh.buildGeometry(geometry);
-		bindGeometry();
+	case 's': case 'S':		
+		if (depth >= 1) {
+			depth--;
+			setupGeometry(depth);
+			bindGeometry();
+		}		
 		break;
 	case 'r':  // hold
 		mode++;
