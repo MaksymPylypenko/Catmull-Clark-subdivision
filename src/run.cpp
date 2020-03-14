@@ -27,10 +27,9 @@ int lineLoop = 4;
 void setupGeometry() {	
 	//mesh.loadTriangObj("obj/dodecahedron.obj");
 	//mesh.loadTriangObj("obj/teapot.obj");
-	// lineLoop = 3;
+	//lineLoop = 3;
 
 	mesh.loadQuadObj("obj/cube.obj");
-	mesh.subDivide();	
 	mesh.buildGeometry(geometry);
 }
 
@@ -39,32 +38,19 @@ void setupGeometry() {
 /// Loads current geometry to the GPU
 
 void bindGeometry() {
-	
-	// Initialize VBO for Vertex data
-	GLuint VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-
 	glBufferData(
 		GL_ARRAY_BUFFER,
 		geometry.positions.size() * sizeof(GLfloat),
 		geometry.positions.data(),
 		GL_STATIC_DRAW
-	);
-
-	// Initialize VBO for Elements (indices)
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO);
-
+	);	   
 	glBufferData(
 		GL_ELEMENT_ARRAY_BUFFER,
 		geometry.elements.size() * sizeof(GLuint),
 		geometry.elements.data(),
 		GL_STATIC_DRAW
 	);
-
-	std::cout << "positions = " << geometry.positions.size() / 4 << "\n";
+	std::cout << "\npositions = " << geometry.positions.size() / 4 << "\n";
 	std::cout << "elements = " << geometry.elements.size();
 }
 
@@ -73,16 +59,25 @@ void bindGeometry() {
 /// OpenGL initialization
 
 void init() {
-
+	
 	// Initialize VAO
 	GLuint VAO;
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
+	// Initialize VBO for Vertex data		
+	GLuint VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	// Initialize VBO for Elements (indices)
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO);
+
+
 	// Setup and load geomerty to GPU		
 	setupGeometry();
 	bindGeometry();
-
 
 	// Load shaders and use the resulting shader program
 	GLuint shader = InitShader("vshader.glsl", "fshader.glsl");
@@ -98,7 +93,6 @@ void init() {
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 }
-
 
 
 ///----------------------------------------------------------------------------
@@ -146,6 +140,7 @@ int mode;
 bool pause = false;
 void keyboard(unsigned char key, int x, int y)
 {
+		
 	switch (key) {
 	case 033: // Escape Key
 	case 'q': case 'Q':
@@ -153,6 +148,16 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case ' ':  // hold
 		pause = !pause;
+		break;
+	case 'w': case 'W':
+		mesh.subDivide();
+		mesh.buildGeometry(geometry);
+		bindGeometry();
+		break;
+	case 's': case 'S':
+		mesh.popSubDivision();
+		mesh.buildGeometry(geometry);
+		bindGeometry();
 		break;
 	case 'r':  // hold
 		mode++;

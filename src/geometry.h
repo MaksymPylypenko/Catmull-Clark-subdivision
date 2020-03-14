@@ -67,6 +67,7 @@ public:
 class Mesh {
 public:
 	Mesh::Mesh();
+	Mesh::Mesh(std::vector<glm::vec3> points, std::vector<Face*> faces, Mesh * oldCopy);
 	std::vector<glm::vec3> points;
 	std::vector<Face *> faces;
 
@@ -74,7 +75,10 @@ public:
 	void mergeFace(Face * f);	
 
 	// For subdivision
+	Mesh * oldCopy;
 	void subDivide();
+	void popSubDivision();
+
 	void findFacePoints(std::vector<glm::vec3>& outPoints);
 	void findVertexPoints(std::vector<glm::vec3>& outPoints);
 	void findEdgePoints(std::vector<glm::vec3>& outPoints);

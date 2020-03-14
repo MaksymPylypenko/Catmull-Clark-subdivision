@@ -4,9 +4,17 @@
 #include "geometry.h"
 
 Geometry::Geometry() {};
-Mesh::Mesh() {};
-HalfEdge::HalfEdge() {};
+Mesh::Mesh() {
+	this->oldCopy = NULL;
+};
 
+Mesh::Mesh(std::vector<glm::vec3> points, std::vector<Face*> faces, Mesh * oldCopy) {
+	this->points = points;
+	this->faces = faces;
+	this->oldCopy = oldCopy;
+};
+
+HalfEdge::HalfEdge() {};
 HalfEdge::HalfEdge(int head) {
 	this->head = head;
 	this->next = NULL;
@@ -30,9 +38,7 @@ Face* makeFace(HalfEdge* root) {
 	Face* myFace = new Face(root);
 	int n = 0;
 	HalfEdge* currEdge = root;
-	std::cout << "\nMaking a face:\n";
 	while (loop) {		
-		std::cout << "vertexID ["<<n<<"] ="<< currEdge->head<<"\n";
 		currEdge->face = myFace;
 		currEdge = currEdge->next;
 		n++;
@@ -146,7 +152,10 @@ void Mesh::mergeFace(Face * newFace) {
 
 
 void Mesh::buildGeometry(Geometry &geometry) {	
-	std::cout << "Making elements from " << faces.size() << " faces\n\n";
+
+	geometry.positions.clear();
+	geometry.elements.clear();	
+
 	for (Face * face : faces) {
 		HalfEdge * currEdge = face->root; 
 				
@@ -292,19 +301,17 @@ void Mesh::findVertexPoints(std::vector<glm::vec3> &outPoints) {
 
 // #3. Find edge points
 // 
-//			e  
+//          e  
 //	            
-//	   e    v    e    
+//     e    v    e    
 //	        
-//			e  
+//          e  
 //         
 void Mesh::findEdgePoints(std::vector<glm::vec3>& outPoints) {
 	std::vector<glm::vec3> array;
 
 	for (Face* face : faces) {
 		HalfEdge* currEdge = face->root;
-
-		//std::cout << "\nNext face\n";
 
 		bool loop = true;
 		while (loop) {
@@ -342,9 +349,9 @@ void Mesh::findEdgePoints(std::vector<glm::vec3>& outPoints) {
 // #4. We can start making half edges
 // 
 //          e 
-//		 __| |__
-//	   e __ v __ e
-//		   | |
+//       __| |__
+//     e __ v __ e
+//         | |
 //          e    
 //
 void Mesh::mergeCorners(std::vector<glm::vec3>& outPoints) {
@@ -373,9 +380,9 @@ void Mesh::mergeCorners(std::vector<glm::vec3>& outPoints) {
 	// We can also use recently updated original points to extend our half edges:
 	//
 	//     p __ e __ p
-	//		|__| |__|
-	//	   e __ v __ e
-	//		|__| |__|
+	//      |__| |__|
+	//     e __ v __ e
+	//      |__| |__|
 	//     p    e    p
 	//
 	for (Face* face : faces) {
@@ -388,9 +395,9 @@ void Mesh::mergeCorners(std::vector<glm::vec3>& outPoints) {
 
 			// 
 			//          e 
-			//		 __| |__
-			//	   e __ v __ e
-			//		   | |__
+			//       __| |__
+			//     e __ v __ e
+			//         | |__
 			//          e    p
 			//
 
@@ -399,9 +406,9 @@ void Mesh::mergeCorners(std::vector<glm::vec3>& outPoints) {
 
 			// 
 			//          e 
-			//		 __| |__
-			//	   e __ v __ e
-			//		   | |__|
+			//       __| |__
+			//     e __ v __ e
+			//         | |__|
 			//          e    p
 			//
 
@@ -412,9 +419,9 @@ void Mesh::mergeCorners(std::vector<glm::vec3>& outPoints) {
 			// If we repeat this for each Half Edge of an original Face, we would get
 			//
 			//       __ e __
-			//		|__| |__|
-			//	   e __ v __ e
-			//		|__| |__|
+			//      |__| |__|
+			//     e __ v __ e
+			//      |__| |__|
 			//          e
 			//
 
@@ -431,30 +438,28 @@ void Mesh::mergeCorners(std::vector<glm::vec3>& outPoints) {
 // To make a mesh we need to find all the pairs from other faces:
 //       __   __
 //     P __ e __ P
-//	 |	|__| |__|  |
-//	   e __ v __ e
-//	 |	|__| |__|  |
+//   |  |__| |__|  |
+//     e __ v __ e
+//   |  |__| |__|  |
 //     P __ e __ P
 //   
 void Mesh::mergeSquares(std::vector<glm::vec3>& outPoints) {    
 	for (Face* face : faces) {
 		HalfEdge* currEdge = face->root;
 
-		//std::cout << "\nMerging next square\n";
-
 		bool loop = true;
 		while (loop) {
 			//     .    .    .
 			//     .    .    .
-			//	     __ v __  
-			//	 |	|__| |__|  |   Current face
+			//       __ v __  
+			//   |  |__| |__|  |   Current face
 			//     a __ e __ b
 			//       
-			//       |    |      <--- first check if these are connected 
+			//        |    |      <--- first check if these are connected 
 			//       __   __
 			//     c __ e __ d
-			//	 |	|__| |__|  |   Some other face
-			//	     __ v __ 
+			//   |  |__| |__|  |   Some other face
+			//       __ v __ 
 			//     .    .    .
 			//     .    .    .
 					   
@@ -510,9 +515,19 @@ void Mesh::subDivide() {
 	mergeSquares(outPoints);
 	populateFaces(outFaces);
 
+	oldCopy = new Mesh(points, faces, oldCopy);
 	faces = outFaces;
 	points = outPoints;
-	std::cout << "\nOutside points size" <<outPoints.size()<<"\n" ;
+}
+
+void Mesh::popSubDivision() {
+	if (oldCopy!=NULL) {
+		
+		points = oldCopy->points;
+		faces = oldCopy->faces;
+		oldCopy = oldCopy->oldCopy;
+		std::cout << "points size =" << points.size() << "\n";
+	}	
 }
 
 
