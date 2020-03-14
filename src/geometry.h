@@ -101,6 +101,7 @@ public:
 
 	// Default models
 	void Mesh::loadCrossModel();
+	void Mesh::loadTorusModel();
 };
 
 

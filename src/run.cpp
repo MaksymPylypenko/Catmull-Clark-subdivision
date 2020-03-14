@@ -20,15 +20,15 @@ GLuint Projection;
 ///----------------------------------------------------------------------------
 /// Building initial geometry
 
-enum Models { Cube, Cross, Teapot};
+enum Models { Cube, Cross, Torus, Teapot};
 
 int currDepth = 0;
 int currModel = Cube;
+float viewerPosition = 5.0;
 
 Geometry geometry;
 Mesh mesh;
 int lineLoop = 3; 
-
 
 void setupGeometry() {
 	if (currModel == Cube) {
@@ -43,9 +43,16 @@ void setupGeometry() {
 		lineLoop = 4;
 		mesh.loadCrossModel();
 	}
+	else if (currModel == Torus) {
+		lineLoop = 4;
+		mesh.loadTorusModel();
+	}
+
+	viewerPosition = 5.0;
 	for (int i = 0; i < currDepth; i++)
 	{
 		mesh.subDivide();
+		viewerPosition -= 0.5;
 	}
 	mesh.buildGeometry(geometry);
 	
@@ -126,7 +133,7 @@ GLfloat Theta[NumAxes] = { 0.0, 0.0, 0.0 };
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	   
-	glm::vec3 viewer_pos(0.0, 0.0, 7.0);
+	glm::vec3 viewer_pos(0.0, 0.0, viewerPosition);
 
 
 	//  Generate model-view matrices
@@ -188,6 +195,12 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case '2':  
 		currModel = Cross;
+		currDepth = 0;
+		setupGeometry();
+		bindGeometry();
+		break;
+	case '3':
+		currModel = Torus;
 		currDepth = 0;
 		setupGeometry();
 		bindGeometry();
