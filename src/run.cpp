@@ -20,10 +20,10 @@ GLuint Projection;
 ///----------------------------------------------------------------------------
 /// Building initial geometry
 
-enum Models { Qube, Teapot };
+enum Models { Cube, Teapot };
 
 int currDepth = 0;
-int currModel = Qube;
+int currModel = Cube;
 
 Geometry geometry;
 Mesh mesh;
@@ -31,7 +31,7 @@ int lineLoop = 3;
 
 
 void setupGeometry() {
-	if (currModel == Qube) {
+	if (currModel == Cube) {
 		lineLoop = 4;
 		mesh.loadQuadObj("obj/cube.obj");
 	}
@@ -173,21 +173,15 @@ void keyboard(unsigned char key, int x, int y)
 			bindGeometry();
 		}		
 		break;
-	case 'd':  // next model
-		currModel++;
+	case '1':  
+		currModel=Cube;
 		currDepth = 0;
-		if (currModel = currModel % 2) {
-	
-		}
 		setupGeometry();
 		bindGeometry();
 		break;
-	case 'a':  // prev model
+	case '2':  
+		currModel = Teapot;
 		currDepth = 0;
-		currModel--;
-		if (currModel == -1) {
-			currModel = 1;
-		}
 		setupGeometry();
 		bindGeometry();
 		break;
