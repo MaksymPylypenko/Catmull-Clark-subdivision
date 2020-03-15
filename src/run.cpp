@@ -20,7 +20,7 @@ GLuint Projection;
 ///----------------------------------------------------------------------------
 /// Building initial geometry
 
-enum Models { Cube, Cross, Torus, Tetrahedron, Dodecahedron, Complex};
+enum Models { Cube, Cross, Torus, Tetrahedron, Dodecahedron, Gourd};
 
 int currDepth = 0;
 int currModel = Cube;
@@ -45,9 +45,9 @@ void setupGeometry() {
 		lineLoop = 3;
 		mesh.loadTriangObj("obj/dodecahedron.obj");
 	}
-	else if (currModel == Complex) {
+	else if (currModel == Gourd) {
 		lineLoop = 3;
-		mesh.loadTriangObj("obj/complex.obj");
+		mesh.loadTriangObj("obj/gourd.obj");
 	}
 	else if (currModel == Cross) {
 		lineLoop = 4;

@@ -1,8 +1,4 @@
 # Ignore everything:
-*
-*.vcxproj
-*.filters
-
-# Except for the themes directories:
-!src/
-
+.vs
+build
+opengl
