@@ -20,7 +20,7 @@ GLuint Projection;
 ///----------------------------------------------------------------------------
 /// Building initial geometry
 
-enum Models { Cube, Cross, Torus, Teapot};
+enum Models { Cube, Cross, Torus, Tetrahedron, Dodecahedron, Complex};
 
 int currDepth = 0;
 int currModel = Cube;
@@ -28,16 +28,26 @@ float viewerPosition = 5.0;
 
 Geometry geometry;
 Mesh mesh;
-int lineLoop = 3; 
+int lineLoop = 4; 
 
 void setupGeometry() {
+	viewerPosition = 5.0;
+
 	if (currModel == Cube) {
 		lineLoop = 4;
 		mesh.loadQuadObj("obj/cube.obj");
 	}
-	else if (currModel == Teapot){
+	else if (currModel == Tetrahedron){
 		lineLoop = 3;
-		mesh.loadTriangObj("obj/teapot.obj");
+		mesh.loadTriangObj("obj/tetrahedron.obj");
+	}
+	else if (currModel == Dodecahedron) {
+		lineLoop = 3;
+		mesh.loadTriangObj("obj/dodecahedron.obj");
+	}
+	else if (currModel == Complex) {
+		lineLoop = 3;
+		mesh.loadTriangObj("obj/complex.obj");
 	}
 	else if (currModel == Cross) {
 		lineLoop = 4;
@@ -47,10 +57,9 @@ void setupGeometry() {
 		lineLoop = 4;
 		mesh.loadTorusModel();
 	}
-
-	viewerPosition = 5.0;
 	for (int i = 0; i < currDepth; i++)
 	{
+		lineLoop = 4;
 		mesh.subDivide();
 		viewerPosition -= 0.5;
 	}
@@ -187,20 +196,13 @@ void keyboard(unsigned char key, int x, int y)
 			bindGeometry();
 		}		
 		break;
-	case '1':  
-		currModel=Cube;
-		currDepth = 0;
-		setupGeometry();
-		bindGeometry();
-		break;
-	case '2':  
-		currModel = Cross;
-		currDepth = 0;
-		setupGeometry();
-		bindGeometry();
-		break;
+	case '1':
+	case '2':
 	case '3':
-		currModel = Torus;
+	case '4':
+	case '5':
+	case '6':
+		currModel = (int)key - 49;
 		currDepth = 0;
 		setupGeometry();
 		bindGeometry();
