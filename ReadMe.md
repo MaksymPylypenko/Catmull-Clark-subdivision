@@ -2,7 +2,7 @@
 * Author: Maksym Pylypenko
 * Email: pylypenm@myumanitoba.ca
 
-![Image](https://github.com/MaksymPylypenko/Catmull-Clark-subdivision/blob/master/subdivision2.png)
+![Image](https://github.com/MaksymPylypenko/Catmull-Clark-subdivision/blob/master/subdivision.png)
 
 ## How to run?
 1. Open a VS project **`opengl.sln`**
